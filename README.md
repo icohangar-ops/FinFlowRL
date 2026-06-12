@@ -7,13 +7,13 @@
     <a href="https://arxiv.org/abs/2509.17964">
       <img src="https://img.shields.io/badge/Paper-arXiv:2509.17964-b31b1b?style=flat-square" alt="Paper">
     </a>
-    <a href="https://github.com/Cubiczan/FinFlowRL/blob/main/LICENSE">
+    <a href="https://github.com/icohangar-ops/FinFlowRL/blob/main/LICENSE">
       <img src="https://img.shields.io/badge/License-MIT-blue?style=flat-square" alt="License">
     </a>
     <a href="https://www.python.org/downloads/">
       <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
     </a>
-    <a href="https://github.com/Cubiczan/FinFlowRL/actions">
+    <a href="https://github.com/icohangar-ops/FinFlowRL/actions">
       <img src="https://img.shields.io/badge/Tests-8%2F8%20passing-success?style=flat-square" alt="Tests">
     </a>
   </p>
@@ -94,7 +94,7 @@ The result is a lightweight (~78K parameters), fully differentiable trading poli
 
 ```bash
 # Clone
-git clone https://github.com/Cubiczan/FinFlowRL.git
+git clone https://github.com/icohangar-ops/FinFlowRL.git
 cd FinFlowRL
 
 # Install (editable)
