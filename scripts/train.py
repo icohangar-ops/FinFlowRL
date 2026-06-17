@@ -3,6 +3,7 @@
 import sys, os, argparse
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "src"))
 
+import numpy as np
 from finflowrl.config.settings import Config
 from finflowrl.envs.hft_env import HFTEnv
 from finflowrl.models.meanflow import MeanFlowPolicy
