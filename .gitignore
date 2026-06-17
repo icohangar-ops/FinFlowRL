@@ -7,6 +7,11 @@ build/
 *.egg
 .eggs/
 
+# Environment / secrets
+.env
+.env.*
+!.env.example
+
 # Virtual environments
 venv/
 .venv/
@@ -22,9 +27,9 @@ env/
 .DS_Store
 Thumbs.db
 
-# Project-specific
-checkpoints/
-data/
+# Project-specific (generated outputs at repo root)
+/checkpoints/
+/data/
 *.npz
 *.npy
 
@@ -34,6 +39,14 @@ data/
 # Coverage
 .coverage
 htmlcov/
+coverage.xml
+
+# Logs
+*.log
+
+# Rust build artifacts
+target/
+Cargo.lock
 
 # CHP session artifacts (local only)
 .chp_registry.json
