@@ -14,7 +14,7 @@
       <img src="https://img.shields.io/badge/Python-3.9+-3776AB?style=flat-square&logo=python&logoColor=white" alt="Python">
     </a>
     <a href="https://github.com/icohangar-ops/FinFlowRL/actions">
-      <img src="https://img.shields.io/badge/Tests-8%2F8%20passing-success?style=flat-square" alt="Tests">
+      <img src="https://img.shields.io/badge/Tests-9%20suites-success?style=flat-square" alt="Tests">
     </a>
   </p>
 </p>
@@ -333,8 +333,9 @@ FinFlowRL/
 │   │   └── settings.py          # YAML config system
 │   └── data/                    # Data utilities
 │       └── generate.py          # Synthetic data generation
-├── tests/                       # 8 test suites
+├── tests/                       # 9 test suites
 │   ├── run_all.py
+│   ├── test_basic.py
 │   ├── test_simulator.py
 │   ├── test_env.py
 │   ├── test_experts.py
