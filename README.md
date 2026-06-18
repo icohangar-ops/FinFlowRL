@@ -402,3 +402,139 @@ This repository is hardened with the [Consensus Hardening Protocol (CHP)](https:
 ### CHP Version
 cognitive-mesh-orchestrator 0.1.0 | [Protocol Docs](https://codeberg.org/cubiczan/consensus-hardening-protocol)
 
+
+---
+
+## Airbyte Integration
+
+FinFlowRL now integrates with the **Airbyte AI Agents Python SDK** to enable real market data backtesting as an alternative to the synthetic `MarketSimulator`.
+
+### Why Airbyte?
+
+The default `MarketSimulator` generates all data synthetically via Merton jump-diffusion + Hawkes processes. While useful for rapid prototyping, real-world validation requires historical market data. Airbyte's agent SDK provides a connector-based pipeline for fetching data from external sources.
+
+### Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                  Data Source Layer                       │
+│                                                         │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐  │
+│  │ Alpha Vantage│  │  Polygon.io  │  │    FRED      │  │
+│  │ (direct API) │  │  (future)    │  │  (future)    │  │
+│  └──────┬───────┘  └──────┬───────┘  └──────┬───────┘  │
+│         │                 │                 │          │
+│         └────────┬────────┘                 │          │
+│                  ▼                          │          │
+│  ┌───────────────────────────┐              │          │
+│  │   Airbyte Agent SDK       │◄─────────────┘          │
+│  │   (connector abstraction) │                         │
+│  └─────────────┬─────────────┘                         │
+│                │                                        │
+│                ▼                                        │
+│  ┌───────────────────────────┐                         │
+│  │   airbyte_feeds.py        │                         │
+│  │   - fetch_daily_ohlcv()   │                         │
+│  │   - ohlcv_to_simulator_   │                         │
+│  │     state()               │                         │
+│  │   - calibrate_simulator   │                         │
+│  │     _from_data()          │                         │
+│  │   - RealDataMarket        │                         │
+│  └─────────────┬─────────────┘                         │
+└────────────────┼────────────────────────────────────────┘
+                 │
+                 ▼
+┌─────────────────────────────────────────────────────────┐
+│              FinFlowRL Training Pipeline                 │
+│                                                         │
+│  RealDataMarket ──► HFT Env ──► MeanFlow ──► PPO       │
+│  (replay history)                                       │
+└─────────────────────────────────────────────────────────┘
+```
+
+### Setup
+
+```bash
+# Install with Airbyte SDK
+pip install -e .
+
+# Set environment variables
+export AIRBYTE_CLIENT_ID=<your_client_id>
+export AIRBYTE_CLIENT_SECRET=<your_client_secret>
+export ALPHAVANTAGE_API_KEY=<your_api_key>  # For direct API bridge
+```
+
+### Usage
+
+**1. Fetch real data and calibrate the simulator:**
+
+```python
+from finflowrl.data import fetch_daily_ohlcv, calibrate_simulator_from_data
+
+# Fetch real OHLCV data via Alpha Vantage
+records = fetch_daily_ohlcv("AAPL", output_size="full")
+
+# Calibrate MarketSimulator parameters from real data
+params = calibrate_simulator_from_data(records)
+# Returns: {S0, mu, sigma, jump_intensity, jump_mean, jump_std}
+```
+
+**2. Backtest on real data with `RealDataMarket`:**
+
+```python
+from finflowrl.data import fetch_daily_ohlcv, RealDataMarket
+
+records = fetch_daily_ohlcv("SPY", output_size="full")
+market = RealDataMarket(records)
+
+obs = market.reset()
+for _ in range(market.n_steps - 1):
+    action = model.predict(obs)  # Your MeanFlow policy
+    obs, reward, done, info = market.step(action)
+    if done:
+        break
+```
+
+**3. Check Airbyte SDK availability:**
+
+```python
+from finflowrl.data import is_airbyte_available
+
+if is_airbyte_available():
+    print("Airbyte SDK connected — connectors available")
+else:
+    print("Using direct API bridge (Alpha Vantage)")
+```
+
+**4. MCP configuration for AI agents:**
+
+```python
+from finflowrl.data import get_mcp_config
+
+config = get_mcp_config()
+# Use with Claude Code, Cursor, or any MCP-compatible client
+```
+
+### Current Status
+
+| Component | Status | Notes |
+|-----------|--------|-------|
+| Airbyte SDK import | ✅ Ready | Graceful fallback if not installed |
+| Alpha Vantage direct bridge | ✅ Working | `fetch_daily_ohlcv()` |
+| OHLCV → simulator adapter | ✅ Working | `ohlcv_to_simulator_state()` |
+| Simulator calibration | ✅ Working | `calibrate_simulator_from_data()` |
+| RealDataMarket (replay) | ✅ Working | Drop-in for backtesting |
+| Airbyte financial connectors | 🔜 Future | SDK pattern ready; awaiting connector support |
+| Polygon.io / FRED connectors | 🔜 Future | `fetch_market_data_via_airbyte()` stub in place |
+
+### Module Reference
+
+| Function / Class | File | Description |
+|------------------|------|-------------|
+| `fetch_daily_ohlcv()` | `src/finflowrl/data/airbyte_feeds.py` | Fetch daily OHLCV from Alpha Vantage API |
+| `ohlcv_to_simulator_state()` | `src/finflowrl/data/airbyte_feeds.py` | Convert OHLCV records to simulator format |
+| `calibrate_simulator_from_data()` | `src/finflowrl/data/airbyte_feeds.py` | Fit jump-diffusion params from real data |
+| `RealDataMarket` | `src/finflowrl/data/airbyte_feeds.py` | Historical data replay environment |
+| `is_airbyte_available()` | `src/finflowrl/data/airbyte_feeds.py` | Check if Airbyte SDK is configured |
+| `get_mcp_config()` | `src/finflowrl/data/airbyte_feeds.py` | MCP server config for AI agent access |
+| `fetch_market_data_via_airbyte()` | `src/finflowrl/data/airbyte_feeds.py` | Async Airbyte connector fetch (future) |

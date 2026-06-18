@@ -30,6 +30,7 @@ dependencies = [
     "numpy>=1.21",
     "pyyaml>=6.0",
     "tqdm>=4.60",
+    "airbyte-agent-sdk>=0.1.0",
 ]
 
 [project.optional-dependencies]
